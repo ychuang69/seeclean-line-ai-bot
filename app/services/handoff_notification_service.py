@@ -28,7 +28,6 @@ def build_handoff_flex_contents(
     user_id: str,
     text: str,
     display_name: str | None,
-    postback_data: str,
 ) -> dict:
     customer = display_name or "LINE 客戶"
     safe_text = text.strip()[:1000]
@@ -70,10 +69,9 @@ def build_handoff_flex_contents(
                     "color": "#147D64",
                     "height": "sm",
                     "action": {
-                        "type": "postback",
+                        "type": "message",
                         "label": "恢復 Bot",
-                        "data": postback_data,
-                        "displayText": "已選擇恢復 Bot",
+                        "text": f"恢復 {user_id}",
                     },
                 }
             ],
@@ -96,7 +94,7 @@ def notify_handoff(user_id: str | None, text: str) -> dict:
         notification = build_handoff_notification(user_id, text, display_name)
         postback_data = build_resolve_postback_data(user_id) if user_id else None
         if user_id and postback_data:
-            contents = build_handoff_flex_contents(user_id, text, display_name, postback_data)
+            contents = build_handoff_flex_contents(user_id, text, display_name)
             return push_flex_message(settings.line_admin_user_id, notification, contents)
         return push_message(settings.line_admin_user_id, notification)
     except requests.RequestException as exc:

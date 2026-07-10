@@ -28,9 +28,9 @@ class LineClientTests(unittest.TestCase):
                             {
                                 "type": "button",
                                 "action": {
-                                    "type": "postback",
+                                    "type": "message",
                                     "label": "恢復 Bot",
-                                    "data": "action=resolve_handoff&user_id=U123",
+                                    "text": "恢復 U123",
                                 },
                             }
                         ],
@@ -42,9 +42,9 @@ class LineClientTests(unittest.TestCase):
         message = post.call_args.kwargs["json"]["messages"][0]
         self.assertEqual(message["type"], "flex")
         action = message["contents"]["footer"]["contents"][0]["action"]
-        self.assertEqual(action["type"], "postback")
+        self.assertEqual(action["type"], "message")
         self.assertEqual(action["label"], "恢復 Bot")
-        self.assertEqual(action["data"], "action=resolve_handoff&user_id=U123")
+        self.assertEqual(action["text"], "恢復 U123")
 
 
 if __name__ == "__main__":

@@ -42,17 +42,16 @@ class HandoffNotificationServiceTests(unittest.TestCase):
         contents = push_flex_message.call_args.args[2]
         self.assertEqual(contents["footer"]["contents"][0]["action"]["label"], "恢復 Bot")
 
-    def test_flex_contents_include_persistent_postback_button(self):
+    def test_flex_contents_include_persistent_message_button(self):
         contents = build_handoff_flex_contents(
             CUSTOMER_ID,
             "洗完漏水怎麼辦",
             "王小明",
-            f"action=resolve_handoff&user_id={CUSTOMER_ID}",
         )
 
         action = contents["footer"]["contents"][0]["action"]
-        self.assertEqual(action["type"], "postback")
-        self.assertIn(CUSTOMER_ID, action["data"])
+        self.assertEqual(action["type"], "message")
+        self.assertEqual(action["text"], f"恢復 {CUSTOMER_ID}")
 
 
 if __name__ == "__main__":
