@@ -7,6 +7,8 @@ from sqlalchemy.orm import Session
 from app.db import get_db, init_db
 from app.line_client import reply_message
 from app.security import verify_line_signature
+from app.services.handoff_notification_service import notify_handoff
+from app.services.intent_service import Intent
 from app.services.message_router import process_text_message
 
 
@@ -61,6 +63,8 @@ async def line_webhook(
         if not result["deduplicated"] and event.get("replyToken"):
             line_result = reply_message(event["replyToken"], result["reply"])
             result["line_reply"] = line_result
+        if not result["deduplicated"] and result["intent"] == str(Intent.HANDOFF):
+            result["handoff_notification"] = notify_handoff(source.get("userId"), message.get("text", ""))
         results.append(result)
 
     return {"ok": True, "results": results}

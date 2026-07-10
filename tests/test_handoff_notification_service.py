@@ -1,0 +1,41 @@
+import unittest
+from unittest.mock import patch
+
+from app.config import settings
+from app.services.handoff_notification_service import (
+    build_handoff_notification,
+    notify_handoff,
+)
+
+
+class HandoffNotificationServiceTests(unittest.TestCase):
+    def test_build_notification_contains_customer_context(self):
+        message = build_handoff_notification("U123", "洗完漏水怎麼辦", "王小明")
+
+        self.assertIn("王小明", message)
+        self.assertIn("U123", message)
+        self.assertIn("洗完漏水怎麼辦", message)
+
+    def test_notification_is_skipped_without_admin_user_id(self):
+        with patch.object(settings, "line_admin_user_id", ""):
+            result = notify_handoff("U123", "洗完漏水怎麼辦")
+
+        self.assertTrue(result["skipped"])
+
+    @patch("app.services.handoff_notification_service.push_message")
+    @patch("app.services.handoff_notification_service.get_profile")
+    def test_notification_uses_profile_and_pushes_to_admin(self, get_profile, push_message):
+        get_profile.return_value = {"displayName": "王小明"}
+        push_message.return_value = {"ok": True, "status_code": 200}
+
+        with patch.object(settings, "line_admin_user_id", "UADMIN"):
+            result = notify_handoff("U123", "洗完漏水怎麼辦")
+
+        self.assertTrue(result["ok"])
+        push_message.assert_called_once()
+        self.assertEqual(push_message.call_args.args[0], "UADMIN")
+        self.assertIn("王小明", push_message.call_args.args[1])
+
+
+if __name__ == "__main__":
+    unittest.main()

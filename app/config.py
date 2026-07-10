@@ -27,6 +27,9 @@ class Settings:
     line_channel_secret: str = os.getenv("LINE_CHANNEL_SECRET", "")
     line_channel_access_token: str = os.getenv("LINE_CHANNEL_ACCESS_TOKEN", "")
     line_reply_api_url: str = os.getenv("LINE_REPLY_API_URL", "https://api.line.me/v2/bot/message/reply")
+    line_push_api_url: str = os.getenv("LINE_PUSH_API_URL", "https://api.line.me/v2/bot/message/push")
+    line_profile_api_url: str = os.getenv("LINE_PROFILE_API_URL", "https://api.line.me/v2/bot/profile")
+    line_admin_user_id: str = os.getenv("LINE_ADMIN_USER_ID", "")
 
     ai_enabled: bool = os.getenv("AI_ENABLED", "false").lower() in {"1", "true", "yes", "on"}
     ai_api_key: str = os.getenv("AI_API_KEY", "")
