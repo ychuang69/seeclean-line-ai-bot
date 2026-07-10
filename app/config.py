@@ -30,6 +30,7 @@ class Settings:
     line_push_api_url: str = os.getenv("LINE_PUSH_API_URL", "https://api.line.me/v2/bot/message/push")
     line_profile_api_url: str = os.getenv("LINE_PROFILE_API_URL", "https://api.line.me/v2/bot/profile")
     line_admin_user_id: str = os.getenv("LINE_ADMIN_USER_ID", "")
+    handoff_pause_hours: int = int(os.getenv("HANDOFF_PAUSE_HOURS", "24"))
 
     ai_enabled: bool = os.getenv("AI_ENABLED", "false").lower() in {"1", "true", "yes", "on"}
     ai_api_key: str = os.getenv("AI_API_KEY", "")

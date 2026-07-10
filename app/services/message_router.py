@@ -7,7 +7,8 @@ from sqlalchemy.orm import Session
 
 from app.models import MessageLog
 from app.services.handoff_service import needs_handoff
-from app.services.intent_service import detect_intent
+from app.services.handoff_session_service import activate_handoff, get_active_handoff
+from app.services.intent_service import Intent, detect_intent
 from app.services.reply_service import build_reply
 
 
@@ -36,8 +37,17 @@ def process_text_message(
     else:
         key = f"{source}:{uuid4()}"
 
-    intent = detect_intent(text, is_handoff=needs_handoff(text))
-    reply = build_reply(intent, text)
+    active_handoff = get_active_handoff(db, user_id) if source == "line" else None
+    if active_handoff:
+        intent = Intent.HANDOFF
+        reply = None
+        should_reply = False
+    else:
+        intent = detect_intent(text, is_handoff=needs_handoff(text))
+        reply = build_reply(intent, text)
+        should_reply = True
+        if source == "line" and intent == Intent.HANDOFF:
+            activate_handoff(db, user_id, text)
 
     log = MessageLog(
         dedupe_key=key,
@@ -62,6 +72,8 @@ def process_text_message(
             "intent": existing.intent if existing else str(intent),
             "reply": existing.reply_text if existing else reply,
             "log_id": existing.id if existing else None,
+            "should_reply": False,
+            "handoff_active": bool(active_handoff),
         }
     db.refresh(log)
 
@@ -70,4 +82,6 @@ def process_text_message(
         "intent": str(intent),
         "reply": reply,
         "log_id": log.id,
+        "should_reply": should_reply,
+        "handoff_active": bool(active_handoff or intent == Intent.HANDOFF),
     }

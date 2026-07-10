@@ -60,7 +60,7 @@ async def line_webhook(
             raw_event=event,
         )
 
-        if not result["deduplicated"] and event.get("replyToken"):
+        if not result["deduplicated"] and result.get("should_reply", True) and event.get("replyToken"):
             line_result = reply_message(event["replyToken"], result["reply"])
             result["line_reply"] = line_result
         if not result["deduplicated"] and result["intent"] == str(Intent.HANDOFF):
