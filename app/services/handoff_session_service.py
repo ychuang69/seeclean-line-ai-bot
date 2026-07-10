@@ -45,3 +45,14 @@ def activate_handoff(db: Session, user_id: str | None, reason: str) -> HandoffSe
         )
         db.add(handoff)
     return handoff
+
+
+def resolve_handoff(db: Session, user_id: str) -> bool:
+    handoff = db.query(HandoffSession).filter(HandoffSession.user_id == user_id).first()
+    if not handoff or not handoff.active:
+        return False
+
+    handoff.active = False
+    handoff.resolved_at = utc_now()
+    db.commit()
+    return True

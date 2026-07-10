@@ -8,6 +8,9 @@ from app.services.handoff_notification_service import (
 )
 
 
+CUSTOMER_ID = "Ubbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+
+
 class HandoffNotificationServiceTests(unittest.TestCase):
     def test_build_notification_contains_customer_context(self):
         message = build_handoff_notification("U123", "洗完漏水怎麼辦", "王小明")
@@ -29,12 +32,13 @@ class HandoffNotificationServiceTests(unittest.TestCase):
         push_message.return_value = {"ok": True, "status_code": 200}
 
         with patch.object(settings, "line_admin_user_id", "UADMIN"):
-            result = notify_handoff("U123", "洗完漏水怎麼辦")
+            result = notify_handoff(CUSTOMER_ID, "洗完漏水怎麼辦")
 
         self.assertTrue(result["ok"])
         push_message.assert_called_once()
         self.assertEqual(push_message.call_args.args[0], "UADMIN")
         self.assertIn("王小明", push_message.call_args.args[1])
+        self.assertIn(CUSTOMER_ID, push_message.call_args.kwargs["postback_data"])
 
 
 if __name__ == "__main__":

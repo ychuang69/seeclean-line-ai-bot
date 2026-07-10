@@ -28,14 +28,30 @@ def reply_message(reply_token: str, text: str) -> dict:
     return {"ok": True, "status_code": response.status_code}
 
 
-def push_message(user_id: str, text: str) -> dict:
+def push_message(user_id: str, text: str, postback_data: str | None = None) -> dict:
     if not settings.line_channel_access_token:
         return {"ok": False, "skipped": True, "reason": "LINE_CHANNEL_ACCESS_TOKEN not set"}
+
+    message = {"type": "text", "text": text}
+    if postback_data:
+        message["quickReply"] = {
+            "items": [
+                {
+                    "type": "action",
+                    "action": {
+                        "type": "postback",
+                        "label": "恢復 Bot",
+                        "data": postback_data,
+                        "displayText": "已選擇恢復 Bot",
+                    },
+                }
+            ]
+        }
 
     response = requests.post(
         settings.line_push_api_url,
         headers=_headers(),
-        json={"to": user_id, "messages": [{"type": "text", "text": text}]},
+        json={"to": user_id, "messages": [message]},
         timeout=10,
     )
     response.raise_for_status()

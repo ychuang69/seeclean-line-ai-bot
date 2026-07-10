@@ -4,6 +4,7 @@ import requests
 
 from app.config import settings
 from app.line_client import get_profile, push_message
+from app.services.admin_action_service import build_resolve_postback_data
 
 
 logger = logging.getLogger(__name__)
@@ -18,7 +19,8 @@ def build_handoff_notification(user_id: str | None, text: str, display_name: str
         f"客戶：{customer}\n"
         f"User ID：{customer_id}\n"
         f"訊息：{safe_text}\n\n"
-        "請至 LINE Official Account Manager 查看並回覆。"
+        "請至 LINE Official Account Manager 查看並回覆。\n"
+        f"完成後可輸入：恢復 {customer_id}"
     )
 
 
@@ -35,7 +37,8 @@ def notify_handoff(user_id: str | None, text: str) -> dict:
 
     try:
         notification = build_handoff_notification(user_id, text, display_name)
-        return push_message(settings.line_admin_user_id, notification)
+        postback_data = build_resolve_postback_data(user_id) if user_id else None
+        return push_message(settings.line_admin_user_id, notification, postback_data=postback_data)
     except requests.RequestException as exc:
         logger.error("Unable to send LINE handoff notification", exc_info=True)
         return {"ok": False, "error": type(exc).__name__}
